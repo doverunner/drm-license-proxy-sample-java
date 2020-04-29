@@ -39,3 +39,73 @@ pallycon.response.format=original
 전달 받은 sample-data header를 이용한 테스트를 위해서는 createPallyConCustomdata method 에 TODO 사항들을 update.  
 [JAVA](/src/main/java/com/pallycon/sample/service/SampleService.java)  
 
+```java
+    //sample source
+    private String createPallyConCustomdata(String sampleData, String drmType) throws Exception {
+            String siteKey = env.getProperty("pallycon.sitekey");
+            String accessKey = env.getProperty("pallycon.accesskey");
+            String siteId = env.getProperty("pallycon.siteid");
+    
+            ...
+    
+            //TODO 1.
+            // Add sample data processing
+            // ....
+            // cid, userId is required
+            String cid = "bigbuckbunny";
+            String userId = "proxySample";
+            //-----------------------------
+    
+            pallyConDrmTokenClient.userId(userId);
+            pallyConDrmTokenClient.cId(cid);
+    
+            //TODO 2.
+            // Create license rule
+            // https://pallycon.com/docs/en/multidrm/license/license-token/#license-policy-json
+            
+            // option
+            // create playback_policy
+            // this sample rule : limit 3600 seconds license.
+            PlaybackPolicy playbackPolicy = new PlaybackPolicy();
+            playbackPolicy.licenseDuration(3000);
+            playbackPolicy.persistent(true);
+            
+            // option
+            // create security_policy
+            //this sample rule: ALL Track, Widevine Security Level 5
+            SecurityPolicyWidevine securityPolicyWidevine = 
+                    new SecurityPolicyWidevine().securityLevel(WidevineSecurityLevel.HW_SECURE_ALL);
+            
+            SecurityPolicy securityPolicy = 
+                    new SecurityPolicy().trackType(TrackType.ALL).widevine(securityPolicyWidevine);
+    
+            
+            // option
+            //create external_key
+            // this sampe rule : mpeg_cenc ALL TRACK keyid : 01234567890123450123456789012345, key: 01234567890123450123456789012345
+            ExternalKeyPolicyMpegCenc externalKeyPolicyMpegCenc = 
+                    new ExternalKeyPolicyMpegCenc(
+                            TrackType.ALL
+                            ,"01234567890123450123456789012345"
+                            ,"01234567890123450123456789012345");
+            
+            ExternalKeyPolicy externalKeyPolicy = new ExternalKeyPolicy();
+            externalKeyPolicy.mpegCenc(externalKeyPolicyMpegCenc);
+            
+    
+            //TODO 3.
+            // create PallyConDrmTokenPolicy
+            // Set the created playbackpolicy, securitypolicy, and externalkey.
+            PallyConDrmTokenPolicy pallyConDrmTokenPolicy= new PallyConDrmTokenPolicy.PolicyBuilder()
+                    .playbackPolicy(playbackPolicy)
+                    .securityPolicy(securityPolicy)
+                    .externalKey(externalKeyPolicy)
+                    .build();
+    
+            // Token is created with the created token policy.
+            return pallyConDrmTokenClient.policy(pallyConDrmTokenPolicy).execute();
+    
+        }
+
+```
+

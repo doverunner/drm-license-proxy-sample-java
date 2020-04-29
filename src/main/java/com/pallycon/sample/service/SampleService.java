@@ -20,15 +20,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Base64;
-import java.util.Optional;
 
 /**
  * Created by Brown on 2019-12-11.
  */
 @Service("sampleService")
 public class SampleService implements Sample{
-
     Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private static final String RESPONSE_FORMAT_ORIGINAL = "ORIGINAL";
     private static final String RESPONSE_FORMAT_CUSTOM = "CUSTOM";
 
@@ -52,7 +51,9 @@ public class SampleService implements Sample{
     }
 
     /**
-     * create pallycon-customdata-v2
+     * Create pallycon-customdata-v2 using the received paramter value.
+     * It is created using pallycon-token-sample.jar provided by Pallycon.
+     *
      * @param sampleData request
      * @param drmType
      * @return
@@ -103,9 +104,10 @@ public class SampleService implements Sample{
         playbackPolicy.licenseDuration(3000);
         playbackPolicy.persistent(true);
 
+
         //TODO 3.
         // create PallyConDrmTokenPolicy
-        // set playbackpolicy, securitypolicy, externalkey
+        // Set the created playbackpolicy, securitypolicy, and externalkey.
         PallyConDrmTokenPolicy pallyConDrmTokenPolicy= new PallyConDrmTokenPolicy.PolicyBuilder()
                 .playbackPolicy(playbackPolicy)
                 .build();
@@ -115,6 +117,15 @@ public class SampleService implements Sample{
 
     }
 
+    /**
+     * Make a request to the Pallycon license server.
+     * @param url
+     * @param body
+     * @param header
+     * @param drmType
+     * @return
+     * @throws Exception
+     */
     byte[] callLicenseServer(String url, byte[] body, String header, String drmType) throws Exception{
         byte[] targetArray= null;
         InputStream in = null;
