@@ -1,7 +1,7 @@
 package com.pallycon.sample.controller;
 
+import com.pallycon.sample.service.DrmType;
 import com.pallycon.sample.service.Sample;
-import com.pallycon.sample.token.DrmType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

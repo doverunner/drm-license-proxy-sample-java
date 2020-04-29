@@ -67,6 +67,13 @@
             <artifactId>guava</artifactId>
             <version>28.1-jre</version>
         </dependency>
+        <dependency>
+            <groupId>com.pallycon</groupId>
+            <artifactId>pallycon-token-sample</artifactId>
+            <version>1.2.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/pallycon-token-sample-1.2.0.jar</systemPath>
+        </dependency>
 
     </dependencies>
 
