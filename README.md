@@ -52,7 +52,7 @@ pallycon.response.format=original
             // Add sample data processing
             // ....
             // cid, userId is required
-            String cid = "bigbuckbunny";
+            String cid = "test";
             String userId = "proxySample";
             //-----------------------------
     
