@@ -39,7 +39,7 @@ import java.util.Random;
 /**
  * This class converts a UTF-8 string into a cipher string, and vice versa.
  * It uses 128-bit AES Algorithm in Cipher Block Chaining (CBC) mode with a UTF-8 key
- * string and a UTF-8 initial vector string which are hashed by MD5. PKCS5Padding is used
+ * string and a UTF-8 initial vector string which are hashed by MD5. PKCS7Padding is used
  * as a padding mode and binary output is encoded by Base64.
  * 
  * @author JO Hyeong-ryeol
