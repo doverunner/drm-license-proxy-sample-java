@@ -1,16 +1,18 @@
 package com.pallycon.sample.service;
 
 import com.google.common.io.ByteStreams;
-import com.pallycon.sample.token.policy.common.ResponseFormat;
+import com.pallycon.sample.service.dto.RequestDto;
 import com.pallycon.sample.token.PallyConDrmTokenClient;
 import com.pallycon.sample.token.PallyConDrmTokenPolicy;
 import com.pallycon.sample.token.policy.PlaybackPolicy;
+import com.pallycon.sample.token.policy.common.ResponseFormat;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
@@ -23,6 +25,8 @@ import java.util.Base64;
 
 /**
  * Created by Brown on 2019-12-11.
+ * Updated by jsnoh on 2022-06-10.
+ *
  */
 @Service("sampleService")
 public class SampleService implements Sample{
@@ -35,16 +39,24 @@ public class SampleService implements Sample{
     @Autowired
     protected Environment env;
 
-    public byte[] getLicenseData(String sampleData, byte[] requestBody, String drmType){
+    public byte[] getLicenseData(byte[] requestBody, RequestDto requestDto, String drmType){
         byte[] responseData = null;
         try {
             String type = DrmType.getDrm(drmType.toLowerCase());
-            logger.debug("DrmType : " + type);
-            String pallyconCustomData = createPallyConCustomdata(sampleData, type);
-            logger.debug("pallycon-customdata-v2 : " + pallyconCustomData);
-            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license"), requestBody, pallyconCustomData, type);
+            logger.debug("DrmType : {}",  type);
+
+            String pallyconCustomData = createPallyConCustomdata(requestBody, requestDto, type);
+            logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
+
+            String modeParam = "";
+            String method = HttpMethod.POST.name();
+            if ( requestDto.getMode() != null && "getserverinfo".equals(requestDto.getMode()) ){
+                modeParam = "?mode=" + requestDto.getMode();
+                method = HttpMethod.GET.name();
+            }
+            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license") + modeParam, requestBody, pallyconCustomData, type, method);
             responseData = checkResponseData(licenseResponse, drmType);
-            logger.debug("responseData :: " + new String(responseData));
+            logger.debug("responseData :: {}", new String(responseData));
         }catch (Exception e){
             logger.error(e.getMessage(), e);
         }
@@ -55,12 +67,13 @@ public class SampleService implements Sample{
      * Create pallycon-customdata-v2 using the received paramter value.
      * It is created using pallycon-token-sample.jar provided by Pallycon.
      *
-     * @param sampleData request
+     * @param requestBody requestBody
+     * @param requestDto requestDto
      * @param drmType
      * @return
      * @throws Exception
      */
-    private String createPallyConCustomdata(String sampleData, String drmType) throws Exception {
+    private String createPallyConCustomdata(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
         String siteKey = env.getProperty("pallycon.sitekey");
         String accessKey = env.getProperty("pallycon.accesskey");
         String siteId = env.getProperty("pallycon.siteid");
@@ -74,7 +87,11 @@ public class SampleService implements Sample{
                 .siteId(siteId)
                 .responseFormat(ResponseFormat.valueOf(toeknResponseFormat));
 
+
         switch (drmType.toLowerCase()){
+            case "ncg":
+                pallyConDrmTokenClient.ncg();
+                break;
             case "fairplay":
                 pallyConDrmTokenClient.fairplay();
                 break;
@@ -90,8 +107,9 @@ public class SampleService implements Sample{
         // Add sample data processing
         // ....
         // cid, userId is required
-        String cid = "test";
-        String userId = "proxySample";
+        String cid = "proxySample";
+        String userId = "proxy_sample_test";
+
         //-----------------------------
 
         pallyConDrmTokenClient.userId(userId);
@@ -102,7 +120,7 @@ public class SampleService implements Sample{
         // https://pallycon.com/docs/en/multidrm/license/license-token/#license-policy-json
         // this sample rule : limit 3600 seconds license.
         PlaybackPolicy playbackPolicy = new PlaybackPolicy();
-        playbackPolicy.licenseDuration(3000);
+        playbackPolicy.licenseDuration(3600);
         playbackPolicy.persistent(true);
 
 
@@ -127,37 +145,53 @@ public class SampleService implements Sample{
      * @return
      * @throws Exception
      */
-    byte[] callLicenseServer(String url, byte[] body, String header, String drmType) throws Exception{
+    byte[] callLicenseServer(String url, byte[] body, String header, String drmType, String method) throws Exception{
         byte[] targetArray= null;
         InputStream in = null;
-        logger.debug("request body :: " + Base64.getEncoder().encodeToString(body));
+
         try {
             URL targetURL = new URL(url);
             URLConnection urlConnection = targetURL.openConnection();
             HttpURLConnection hurlConn = (HttpURLConnection) urlConnection;
 
-            if(drmType.equals(DrmType.FAIRPLAY.getDrm())){
-                hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                body = ("spc="+ new String(body)).getBytes();
-            }else{
-                hurlConn.setRequestProperty("Content-Type", "application/octet-stream");
-            }
+            if ( HttpMethod.POST.name().equals(method)) {
+                if ( body != null ) {
+                    logger.debug("request body :: {}", Base64.getEncoder().encodeToString(body));
+                }
 
-            hurlConn.setRequestProperty("pallycon-customdata-v2", header);
-            hurlConn.setRequestMethod("POST");
-            hurlConn.setDoOutput(true);
+                if(drmType.equals(DrmType.FAIRPLAY.getDrm())) {
+                    hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    body = ("spc=" + new String(body)).getBytes();
+                }else if (drmType.equals(DrmType.NCG.getDrm())){
+                    hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                }else{
+                    hurlConn.setRequestProperty("Content-Type", "application/octet-stream");
+                }
+
+                if (header != null && !"".equals(header)) {
+                    hurlConn.setRequestProperty("pallycon-customdata-v2", header);
+                }
+                hurlConn.setRequestMethod(method);
+                hurlConn.setDoOutput(true);
+
+            }else{
+                hurlConn.setRequestMethod(method);
+                hurlConn.setDoOutput(false);
+            }
             hurlConn.setUseCaches(false);
             hurlConn.setDefaultUseCaches(false);
 
-            OutputStream op = hurlConn.getOutputStream();
-            op.write(body);
-            op.flush();
-            op.close();
+            if ( body != null ) {
+                OutputStream op = hurlConn.getOutputStream();
+                op.write(body);
+                op.flush();
+                op.close();
+            }
 
             in = hurlConn.getInputStream();
 
             targetArray = ByteStreams.toByteArray(in);
-            logger.debug("license :: " + new String(targetArray));
+            logger.debug("license :: {}", new String(targetArray));
 
         }catch (Exception e){
             e.printStackTrace();
@@ -186,7 +220,7 @@ public class SampleService implements Sample{
             if(null != deviceInfo){
                 deviceId = (String) deviceInfo.get("device_id");
             }
-            logger.debug("Device ID ::  " + deviceId);
+            logger.debug("Device ID :: {} ", deviceId);
 
             if(RESPONSE_FORMAT_ORIGINAL.equals(responseFormat)){
                 licenseResponse = convertResponseDate(licenseResponse, responseJson, drmType);
