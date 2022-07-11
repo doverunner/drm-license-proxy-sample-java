@@ -6,7 +6,8 @@ package com.pallycon.sample.service;
 public enum DrmType{
     WIDEVINE("widevine", "Widevine")
     , PLAYREADY("playready", "PlayReady")
-    , FAIRPLAY("fairplay", "FairPlay");
+    , FAIRPLAY("fairplay", "FairPlay")
+    , NCG("ncg", "NCG");
 
     private final String name;
     private final String drm;

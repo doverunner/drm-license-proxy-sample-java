@@ -1,4 +1,4 @@
-# PallyCon Token Proxy Sample (v2.0)
+# PallyCon Token Proxy Sample (v2.1)
 
 Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 
@@ -36,25 +36,42 @@ pallycon.response.format=[original|json]
     - original: 기본적인 라이선스 정보만 응답
     - json: 추가 정보가 포함된 JSON type으로 응답. 해당 응답으로 DRM 콘텐츠를 재생하기 위해서는 클라이언트에서 추가로 응답을 파싱 처리하는 기능이 개발되어야 합니다.
 
+
+### 참고 사항
+1. Widevine 은 최초 인증시 Widevine 인증서를 받기 위해 라이센스 요청을 하여 인증서를 다운 받은 후 라이센스 요청을 한다.
+2. NCG는 최초 라이센스 인증시 `mode=getserverinfo`를 호출하여 기기별 인증서를 다운받은 후 라이센스 요청을 한다.
+
+
+
 ## 샘플 프로젝트 기본 설정
 
 1. url : http://localhost/drm/{drmType} 
-    - drmType : fairplay, playready, widevine  
+    - drmType : fairplay, playready, widevine , ncg 
 2. cid : test  
 3. userId : proxySample  
 4. license Rule : 라이선스 만료 시간 3600초
-5. custom header name : sample-data
+
 
 ## TODO
 
-전달 받은 sample-data header를 이용한 테스트를 위해서는 `createPallyConCustomdata` 메소드의 `TODO` 사항들을 업데이트해야 합니다.
+1. 테스트를 위해서는 기본 설정 완료 후 `createPallyConCustomdata` 메소드의 `TODO` 사항들을 업데이트해야 합니다.
+   - [properties](../src/main/resources/application.properties)
+   - [JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)  
 
-[JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)  
+
+2. Client( SDK, Browser ) 와 Proxy Server가 통신 할때 `user_id`, `content_id`를 Proxy Server와 통신이 필요 할 경우 당사에서 사용하고 있는 암호화 방식을 적용하여 통신하여야 한다.
+   - 회사 마다 암호화 방식이 다르므로 별도로 가이드를 제공하지는 않습니다.
+
+
+3. 사용하고자 하는 Policy를 `new PallyConDrmTokenClient()` 를 사용하여 지정한다.
+
+
+
 
 ***
 
 https://pallycon.com | cbiz@inka.co.kr
 
-Copyright 2019 INKA Entworks. All Rights Reserved.
+Copyright 2022 INKA Entworks. All Rights Reserved.
 
 
