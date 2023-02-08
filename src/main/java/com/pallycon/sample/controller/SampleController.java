@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Created by Brown on 2019-12-11.
  * Updated by jsnoh on 2022-06-10.
+ * Updated by jsnoh on 2023-01-30.
  */
 @RestController
 public class SampleController {
@@ -37,12 +38,14 @@ public class SampleController {
      * @return
      */
     @PostMapping(value = "/drm/{drmType}")
-    public ResponseEntity drmProxyPost( @RequestBody(required = false) byte[] requestBody
+    public ResponseEntity drmProxyPost( @RequestHeader(required=false, value="pallycon-client-meta") String pallyconClientMeta
+                                    , @RequestBody(required = false) byte[] requestBody
                                     , @PathVariable(value = "drmType") String drmType
                                     , @RequestParam(value = "spc", required = false) String spc
                                     , RequestDto requestDto
                                     , HttpServletRequest request
     ){
+        logger.debug("header pallyconClientMeta :: {}", pallyconClientMeta);
         logger.debug("request content-type :: {}", request.getContentType());
         logger.debug("request Method :: {}", request.getMethod());
 
@@ -57,7 +60,7 @@ public class SampleController {
             }
         }
 
-        byte[] responseData = sampleService.getLicenseData(requestBody, requestDto, drmType);
+        byte[] responseData = sampleService.getLicenseData(pallyconClientMeta, requestBody, requestDto, drmType);
         return ResponseEntity.status(HttpStatus.OK.value()).body(responseData);
     }
 
@@ -78,7 +81,7 @@ public class SampleController {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
 
-        byte[] responseData = sampleService.getLicenseData( null, requestDto, DrmType.NCG.getName());
+        byte[] responseData = sampleService.getLicenseData( null, null, requestDto, DrmType.NCG.getName());
         return ResponseEntity.status(HttpStatus.OK.value()).body(responseData);
     }
 

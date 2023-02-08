@@ -63,7 +63,17 @@ pallycon.response.format = [original|json]
 
 3. Specify the policy to be used using `new PallyConDrmTokenClient()`
 
-
+4. The device information header `pallycon-client-meta` allows you to receive information from the client. ( Pallycon SDK sends it by default. )
+- Original Value String : `ewoJImRldmljZV9pbmZvIjogewoJCSJkZXZpY2VfbW9kZWwiOiAiaVBob25lIFNFIChpUGhvbmU4LDQpIiwKCQkib3NfdmVyc2lvbiI6IjE1LjcuMiIKCX0KfQ==`
+- Base64 Decoding :
+```JSON
+{
+    "device_info": {
+        "device_model": "iPhone SE (iPhone8,4)",
+        "os_version":"15.7.2"
+    }
+}
+```
 
 
 ***
