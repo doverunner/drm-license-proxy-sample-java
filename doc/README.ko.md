@@ -66,7 +66,17 @@ pallycon.response.format=[original|json]
 3. 사용하고자 하는 Policy를 `new PallyConDrmTokenClient()` 를 사용하여 지정한다.
 
 
-
+4. 디바이스 정보 Header `pallycon-client-meta` 를 통해 Client의 정보를 받을수 있다. ( Pallycon SDK에서는 기본으로 보내줌. )
+- Original Value String : `ewoJImRldmljZV9pbmZvIjogewoJCSJkZXZpY2VfbW9kZWwiOiAiaVBob25lIFNFIChpUGhvbmU4LDQpIiwKCQkib3NfdmVyc2lvbiI6IjE1LjcuMiIKCX0KfQ==`
+- Base64 Decoding : 
+```JSON
+{
+    "device_info": {
+        "device_model": "iPhone SE (iPhone8,4)",
+        "os_version":"15.7.2"
+    }
+}
+```
 
 ***
 

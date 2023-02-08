@@ -26,6 +26,7 @@ import java.util.Base64;
 /**
  * Created by Brown on 2019-12-11.
  * Updated by jsnoh on 2022-06-10.
+ * Updated by jsnoh on 2023-01-30.
  *
  */
 @Service("sampleService")
@@ -39,7 +40,7 @@ public class SampleService implements Sample{
     @Autowired
     protected Environment env;
 
-    public byte[] getLicenseData(byte[] requestBody, RequestDto requestDto, String drmType){
+    public byte[] getLicenseData(String pallyconClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
         byte[] responseData = null;
         try {
             String type = DrmType.getDrm(drmType.toLowerCase());
@@ -54,7 +55,7 @@ public class SampleService implements Sample{
                 modeParam = "?mode=" + requestDto.getMode();
                 method = HttpMethod.GET.name();
             }
-            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license") + modeParam, requestBody, pallyconCustomData, type, method);
+            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
             responseData = checkResponseData(licenseResponse, drmType);
             logger.debug("responseData :: {}", new String(responseData));
         }catch (Exception e){
@@ -77,6 +78,10 @@ public class SampleService implements Sample{
         String siteKey = env.getProperty("pallycon.sitekey");
         String accessKey = env.getProperty("pallycon.accesskey");
         String siteId = env.getProperty("pallycon.siteid");
+
+        logger.debug("siteId :: {}", siteId);
+        logger.debug("siteKey :: {}", siteKey);
+        logger.debug("accessKey :: {}", accessKey);
 
         String toeknResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
@@ -140,12 +145,14 @@ public class SampleService implements Sample{
      * Make a request to the Pallycon license server.
      * @param url
      * @param body
-     * @param header
+     * @param pallyconCustomData
      * @param drmType
+     * @param method
+     * @param pallyconClientMeta
      * @return
      * @throws Exception
      */
-    byte[] callLicenseServer(String url, byte[] body, String header, String drmType, String method) throws Exception{
+    byte[] callLicenseServer(String url, byte[] body, String pallyconCustomData, String drmType, String method, String pallyconClientMeta) throws Exception{
         byte[] targetArray= null;
         InputStream in = null;
 
@@ -168,8 +175,11 @@ public class SampleService implements Sample{
                     hurlConn.setRequestProperty("Content-Type", "application/octet-stream");
                 }
 
-                if (header != null && !"".equals(header)) {
-                    hurlConn.setRequestProperty("pallycon-customdata-v2", header);
+                if (pallyconCustomData != null && !"".equals(pallyconCustomData)) {
+                    hurlConn.setRequestProperty("pallycon-customdata-v2", pallyconCustomData);
+                }
+                if (pallyconClientMeta != null && !"".equals(pallyconClientMeta)) {
+                    hurlConn.setRequestProperty("pallycon-client-meta", pallyconClientMeta);
                 }
                 hurlConn.setRequestMethod(method);
                 hurlConn.setDoOutput(true);
