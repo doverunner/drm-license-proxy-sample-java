@@ -112,8 +112,8 @@ public class SampleService implements Sample{
         // Add sample data processing
         // ....
         // cid, userId is required
-        String cid = "proxySample";
-        String userId = "proxy_sample_test";
+        String cid = "palmulti";
+        String userId = "utest";
 
         //-----------------------------
 
@@ -168,7 +168,6 @@ public class SampleService implements Sample{
 
                 if(drmType.equals(DrmType.FAIRPLAY.getDrm())) {
                     hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                    body = ("spc=" + new String(body)).getBytes();
                 }else if (drmType.equals(DrmType.NCG.getDrm())){
                     hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 }else{

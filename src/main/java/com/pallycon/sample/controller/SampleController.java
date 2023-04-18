@@ -50,7 +50,9 @@ public class SampleController {
         logger.debug("request Method :: {}", request.getMethod());
 
         if(DrmType.FAIRPLAY.getName().equals(drmType.toLowerCase())){
-            requestBody = spc.getBytes();
+            if ( spc != null ) {
+                requestBody = spc.getBytes();
+            }
         }
 
         if ( "getserverinfo".equals(requestDto.getMode())){
