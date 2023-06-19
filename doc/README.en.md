@@ -1,4 +1,4 @@
-# PallyCon Token Proxy Sample (v2.1)
+# PallyCon Token Proxy Sample (v2.3)
 
 This sample project is for PallyCon token proxy integration based on Spring boot.
 
@@ -7,7 +7,7 @@ This sample project is for PallyCon token proxy integration based on Spring boot
 ### Test configuration
 
 - If you test the sample player player page online(other than localhost), the page URL should be HTTPS. (SSL/TLS is required)
-- Java JDK: amazon-corretto-8  (jdk1.8.0_232)
+- Java JDK: amazon-corretto-17
 
 ### Configuring Application.properties
 
@@ -40,14 +40,15 @@ pallycon.response.format = [original|json]
 ### Notes
 1. At the time of initial authentication, Widevine requests a license to obtain a Widevine certificate, download the certificate, and request a license.
 2. NCG calls `mode=getserverinfo` to download a certificate for each device and requests a license.
+3. For the Android SDK, both requests and responses are communicated using AES encryption.
 
 
 ## Default configuration of this sample
 
 1. url : http://localhost/drm/{drmType} 
    - drmType : fairplay, playready, widevine, ncg  
-2. cid : test  
-3. userId : proxySample  
+2. AES key : `i9EpyNdKYlW2KPeYLHaWU9nzmEAIcUwn`
+3. AES iv : `0123456789abcdef`
 4. license Rule : license duration is 3600 seconds
 
 
@@ -57,8 +58,9 @@ pallycon.response.format = [original|json]
    - [properties](../src/main/resources/application.properties)
    - [JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)
 
-2. When the client (SDK, Browser) and proxy server connection, if `user_id` and `content_id` need to connection with the proxy server, the encryption method used by the company shall be applied and communicated.
-- Different companies have different encryption methods, so we don't provide separate guides.
+2. In the sample code, `user_id`, `content_id` is implemented to be checked by passing the hash value through HTTP header when the client (SDK, Browser) and proxy server communicate.
+   This is just an example, and you should implement a separate encryption method in the actual production environment.
+   - We don't provide a separate guide to encryption because different companies use different methods.
 
 
 3. Specify the policy to be used using `new PallyConDrmTokenClient()`

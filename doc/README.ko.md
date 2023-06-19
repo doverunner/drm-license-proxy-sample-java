@@ -1,4 +1,4 @@
-# PallyCon Token Proxy Sample (v2.1)
+# PallyCon Token Proxy Sample (v2.3)
 
 Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 
@@ -7,7 +7,7 @@ Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 ### 테스트 환경 세팅
 
 - 재생 테스트용 플레이어 웹페이지가 로컬호스트(http://localhost)가 아닌 경우, 해당 URL에 HTTPS 설정이 필수입니다. (테스트용 웹 서버에 SSL/TLS 적용 필요)
-- Java JDK: amazon-corretto-8  (jdk1.8.0_232)
+- Java JDK: amazon-corretto-17
 
 ### Application.properties 세팅
 
@@ -40,6 +40,7 @@ pallycon.response.format=[original|json]
 ### 참고 사항
 1. Widevine 은 최초 인증시 Widevine 인증서를 받기 위해 라이센스 요청을 하여 인증서를 다운 받은 후 라이센스 요청을 한다.
 2. NCG는 최초 라이센스 인증시 `mode=getserverinfo`를 호출하여 기기별 인증서를 다운받은 후 라이센스 요청을 한다.
+3. Android SDK의 경우 요청과 응답 모두 AES 암호화 하여 통신한다.
 
 
 
@@ -47,8 +48,8 @@ pallycon.response.format=[original|json]
 
 1. url : http://localhost/drm/{drmType} 
     - drmType : fairplay, playready, widevine , ncg 
-2. cid : test  
-3. userId : proxySample  
+2. AES key : `i9EpyNdKYlW2KPeYLHaWU9nzmEAIcUwn`
+3. AES iv : `0123456789abcdef`
 4. license Rule : 라이선스 만료 시간 3600초
 
 
@@ -59,8 +60,9 @@ pallycon.response.format=[original|json]
    - [JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)  
 
 
-2. Client( SDK, Browser ) 와 Proxy Server가 통신 할때 `user_id`, `content_id`를 Proxy Server와 통신이 필요 할 경우 당사에서 사용하고 있는 암호화 방식을 적용하여 통신하여야 한다.
-   - 회사 마다 암호화 방식이 다르므로 별도로 가이드를 제공하지는 않습니다.
+2. Client( SDK, Browser ) 와 Proxy Server가 통신 할때 `user_id`, `content_id`는 샘플 코드에서는 HTTP Header를 통해 해시값을 전달받아 확인하도록 구현되어 있습니다.
+이는 어디까지나 예제 일 뿐 실제 프로뎍션 환경에서는 별도의 암호화 방법을 구현하여야 합니다. 
+   - 회사 마다 암호화 방식이 다르므로 별도로 암호화 가이드를 제공하지는 않습니다.
 
 
 3. 사용하고자 하는 Policy를 `new PallyConDrmTokenClient()` 를 사용하여 지정한다.
@@ -83,5 +85,3 @@ pallycon.response.format=[original|json]
 https://pallycon.com | cbiz@inka.co.kr
 
 Copyright 2022 INKA Entworks. All Rights Reserved.
-
-
