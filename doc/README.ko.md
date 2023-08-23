@@ -13,7 +13,7 @@ Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 
 샘플 프로젝트를 실행하려면 아래와 같은 값들을 설정해야 합니다.
 
-- server.port= {server port} 
+- server.port= {server port}
 - pallycon.sitekey= {PallyCon Site Key}
 - pallycon.accesskey= {PallyCon Access Key}
 - pallycon.siteid= {PallyCon Site ID}
@@ -40,29 +40,27 @@ pallycon.response.format=[original|json]
 ### 참고 사항
 1. Widevine 은 최초 인증시 Widevine 인증서를 받기 위해 라이센스 요청을 하여 인증서를 다운 받은 후 라이센스 요청을 한다.
 2. NCG는 최초 라이센스 인증시 `mode=getserverinfo`를 호출하여 기기별 인증서를 다운받은 후 라이센스 요청을 한다.
-3. Android SDK의 경우 요청과 응답 모두 AES 암호화 하여 통신한다.
 
 
 
 ## 샘플 프로젝트 기본 설정
 
-1. url : http://localhost/drm/{drmType} 
-    - drmType : fairplay, playready, widevine , ncg 
-2. AES key : `i9EpyNdKYlW2KPeYLHaWU9nzmEAIcUwn`
-3. AES iv : `0123456789abcdef`
+1. url : http://localhost/drm/{drmType}
+    - drmType : fairplay, playready, widevine , ncg
+2. cid : test
+3. userId : proxySample
 4. license Rule : 라이선스 만료 시간 3600초
 
 
 ## TODO
 
 1. 테스트를 위해서는 기본 설정 완료 후 `createPallyConCustomdata` 메소드의 `TODO` 사항들을 업데이트해야 합니다.
-   - [properties](../src/main/resources/application.properties)
-   - [JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)  
+    - [properties](../src/main/resources/application.properties)
+    - [JAVA](../src/main/java/com/pallycon/sample/service/SampleService.java)
 
 
-2. Client( SDK, Browser ) 와 Proxy Server가 통신 할때 `user_id`, `content_id`는 샘플 코드에서는 HTTP Header를 통해 해시값을 전달받아 확인하도록 구현되어 있습니다.
-이는 어디까지나 예제 일 뿐 실제 프로뎍션 환경에서는 별도의 암호화 방법을 구현하여야 합니다. 
-   - 회사 마다 암호화 방식이 다르므로 별도로 암호화 가이드를 제공하지는 않습니다.
+2. Client( SDK, Browser ) 와 Proxy Server가 통신 할때 `user_id`, `content_id`를 Proxy Server와 통신이 필요 할 경우 당사에서 사용하고 있는 암호화 방식을 적용하여 통신하여야 한다.
+    - 회사 마다 암호화 방식이 다르므로 별도로 가이드를 제공하지는 않습니다.
 
 
 3. 사용하고자 하는 Policy를 `new PallyConDrmTokenClient()` 를 사용하여 지정한다.
@@ -70,7 +68,7 @@ pallycon.response.format=[original|json]
 
 4. 디바이스 정보 Header `pallycon-client-meta` 를 통해 Client의 정보를 받을수 있다. ( Pallycon SDK에서는 기본으로 보내줌. )
 - Original Value String : `ewoJImRldmljZV9pbmZvIjogewoJCSJkZXZpY2VfbW9kZWwiOiAiaVBob25lIFNFIChpUGhvbmU4LDQpIiwKCQkib3NfdmVyc2lvbiI6IjE1LjcuMiIKCX0KfQ==`
-- Base64 Decoding : 
+- Base64 Decoding :
 ```JSON
 {
     "device_info": {

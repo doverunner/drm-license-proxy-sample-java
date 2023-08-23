@@ -1,19 +1,14 @@
 package com.pallycon.sample.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
-import com.pallycon.sample.model.DeviceInfo;
-import com.pallycon.sample.model.LicenseResponse;
 import com.pallycon.sample.service.dto.RequestDto;
 import com.pallycon.sample.token.PallyConDrmTokenClient;
 import com.pallycon.sample.token.PallyConDrmTokenPolicy;
 import com.pallycon.sample.token.policy.PlaybackPolicy;
 import com.pallycon.sample.token.policy.common.ResponseFormat;
-import com.pallycon.sample.util.AESUtil;
-import com.pallycon.sample.util.JSONUtil;
-import com.pallycon.sample.util.SHAUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,19 +16,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Base64;
 
 /**
  * Created by Brown on 2019-12-11.
@@ -52,62 +40,28 @@ public class SampleService implements Sample{
     @Autowired
     protected Environment env;
 
-    public byte[] getLicenseData(String pallyconClientMeta, String hashCid, String hashUid, byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
-        byte[] responseData;
-        String type = DrmType.getDrm(drmType.toLowerCase());
-        logger.debug("DrmType : {}", type);
+    public byte[] getLicenseData(String pallyconClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
+        byte[] responseData = null;
+        try {
+            String type = DrmType.getDrm(drmType.toLowerCase());
+            logger.debug("DrmType : {}",  type);
 
-        List<String> allowedUserIdList = Arrays.asList("test-user", "testUser"); // This assumes that the value is fetched from a database.
-        String uid = findElementByHash(allowedUserIdList, hashUid);
+            String pallyconCustomData = createPallyConCustomdata(requestBody, requestDto, type);
+            logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
 
-        List<String> allowedContentIdList = Arrays.asList("multitracks", "bigbuckbunny"); // This assumes that the value is fetched from a database.
-        String cid = findElementByHash(allowedContentIdList, hashCid);
-
-        logger.debug("uid :: {}", uid);
-        logger.debug("cid :: {}", cid);
-
-        String pallyconCustomData = createPallyConCustomdata(cid, uid, requestBody, requestDto, type);
-        logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
-
-        String modeParam = "";
-        String method = HttpMethod.POST.name();
-        if (requestDto.getMode() != null && "getserverinfo".equals(requestDto.getMode())) {
-            modeParam = "?mode=" + requestDto.getMode();
-            method = HttpMethod.GET.name();
+            String modeParam = "";
+            String method = HttpMethod.POST.name();
+            if ( requestDto.getMode() != null && "getserverinfo".equals(requestDto.getMode()) ){
+                modeParam = "?mode=" + requestDto.getMode();
+                method = HttpMethod.GET.name();
+            }
+            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
+            responseData = checkResponseData(licenseResponse, drmType);
+            logger.debug("responseData :: {}", new String(responseData));
+        }catch (Exception e){
+            logger.error(e.getMessage(), e);
         }
-
-        String url = env.getProperty("pallycon.url.license");
-
-        if (DrmType.WIDEVINE.getName().equalsIgnoreCase(drmType) && pallyconClientMeta != null) {
-            // for Android SDK
-            String key = Objects.requireNonNull(env.getProperty("pallycon.sdk.aes.key"));
-            String iv = Objects.requireNonNull(env.getProperty("pallycon.sdk.aes.iv"));
-            requestBody = AESUtil.decryptAES256(requestBody, key, iv);
-            byte[] licenseResponse = callLicenseServer(url + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
-            responseData = checkResponseData(licenseResponse, drmType, pallyconClientMeta);
-            responseData = AESUtil.encryptAES256(responseData, key, iv);
-        } else {
-            byte[] licenseResponse = callLicenseServer(url + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
-            responseData = checkResponseData(licenseResponse, drmType, pallyconClientMeta);
-        }
-
-        logger.debug("responseData :: {}", new String(responseData));
-
         return responseData;
-    }
-
-    // TODO 1. Instead of the code below, create the actual logic to validate the content ID.
-    private String findElementByHash(List<String> allowList, String hash) {
-        return allowList.stream()
-                .filter(uid -> {
-                    try {
-                        return SHAUtil.toSha512(uid).equalsIgnoreCase(hash);
-                    } catch (NoSuchAlgorithmException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Not found with hash: " + hash));
     }
 
     /**
@@ -120,7 +74,7 @@ public class SampleService implements Sample{
      * @return
      * @throws Exception
      */
-    private String createPallyConCustomdata(String cid, String uid, byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
+    private String createPallyConCustomdata(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
         String siteKey = env.getProperty("pallycon.sitekey");
         String accessKey = env.getProperty("pallycon.accesskey");
         String siteId = env.getProperty("pallycon.siteid");
@@ -129,14 +83,14 @@ public class SampleService implements Sample{
         logger.debug("siteKey :: {}", siteKey);
         logger.debug("accessKey :: {}", accessKey);
 
-        String tokenResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
+        String toeknResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
         //create pallycon drm token client
         PallyConDrmTokenClient pallyConDrmTokenClient = new PallyConDrmTokenClient()
                 .siteKey(siteKey)
                 .accessKey(accessKey)
                 .siteId(siteId)
-                .responseFormat(ResponseFormat.valueOf(tokenResponseFormat));
+                .responseFormat(ResponseFormat.valueOf(toeknResponseFormat));
 
 
         switch (drmType.toLowerCase()){
@@ -154,7 +108,16 @@ public class SampleService implements Sample{
                 break;
         }
 
-        pallyConDrmTokenClient.userId(uid);
+        //TODO 1.
+        // Add sample data processing
+        // ....
+        // cid, userId is required
+        String cid = "palmulti";
+        String userId = "utest";
+
+        //-----------------------------
+
+        pallyConDrmTokenClient.userId(userId);
         pallyConDrmTokenClient.cId(cid);
 
         //TODO 2.
@@ -175,6 +138,7 @@ public class SampleService implements Sample{
 
         // Token is created with the created token policy.
         return pallyConDrmTokenClient.policy(pallyConDrmTokenPolicy).execute();
+
     }
 
     /**
@@ -249,97 +213,47 @@ public class SampleService implements Sample{
         return targetArray;
     }
 
-    private byte[] checkResponseData(byte[] byteLicenseResponse, String drmType, String pallyconClientMeta) {
+    private byte[] checkResponseData(byte[] licenseResponse, String drmType) throws Exception{
+        JSONParser jsonParser = new JSONParser();
+
         String tokenResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
         String responseFormat = env.getProperty("pallycon.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
-        if (RESPONSE_FORMAT_JSON.equals(tokenResponseFormat)) {
-            ObjectMapper mapper = new ObjectMapper();
-            LicenseResponse licenseResponse;
+        if(RESPONSE_FORMAT_JSON.equals(tokenResponseFormat)){
+            JSONObject responseJson = (JSONObject)jsonParser.parse(new String(licenseResponse));
             /*-------------------------------------------------
             //TODO 4. If you want to control ResponseData, do it here.
              -------------------------------------------------*/
-            try {
-                licenseResponse = mapper.readValue(new String(byteLicenseResponse), LicenseResponse.class);
-            } catch (IOException e) {
-                logger.error("Error parsing JSON response", e);
-                throw new RuntimeException(e);
+            JSONObject deviceInfo = (JSONObject) responseJson.get("device_info");
+            String deviceId = null;
+            if(null != deviceInfo){
+                deviceId = (String) deviceInfo.get("device_id");
             }
-
-            DeviceInfo deviceInfo = licenseResponse.deviceInfo();
-
-            String deviceId = deviceInfo.deviceId();
-            boolean isChromeCdm = deviceInfo.isChromecdm();
-
             logger.debug("Device ID :: {} ", deviceId);
-            logger.debug("Chrome CDM :: {} ", isChromeCdm);
 
-            if (!"".equals(pallyconClientMeta) && "widevine".equalsIgnoreCase(drmType) && isChromeCdm) {
-                throw new RuntimeException("Found contradictory data in the response.");
-            }
-
-            if (RESPONSE_FORMAT_ORIGINAL.equals(responseFormat)) {
-                byteLicenseResponse = convertResponseDate(byteLicenseResponse, licenseResponse.license(), drmType);
+            if(RESPONSE_FORMAT_ORIGINAL.equals(responseFormat)){
+                licenseResponse = convertResponseDate(licenseResponse, responseJson, drmType);
             }
         }
 
-        return byteLicenseResponse;
+        return licenseResponse;
+
     }
 
-    private byte[] convertResponseDate(byte[] licenseResponse, String license, String drmType) {
+    private byte[] convertResponseDate(byte[] licenseResponse, JSONObject responseJson, String drmType) throws Exception {
         byte[] responseData;
 
-        if (null != license) {
-            if ("widevine".equalsIgnoreCase(drmType)) {
+        String license = (String) responseJson.get("license");
+
+        if(null != license){
+            if( "widevine".equalsIgnoreCase(drmType) ){
                 responseData = DatatypeConverter.parseHexBinary(license);
-            } else {
+            }else{
                 responseData = license.getBytes();
             }
-        } else {
+        }else{
             responseData = licenseResponse;
         }
         return responseData;
-    }
-
-    @Override
-    public String getFPSPublicKey() {
-        String result = null;
-        try {
-            result = publicKeyRequest();
-        } catch (IOException | InterruptedException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return result;
-    }
-
-    @Override
-    public String getFPSCertificate(HttpServletResponse servletResponse) {
-        try {
-            String result = publicKeyRequest();
-            if (JSONUtil.isJSONValid(result)) {
-                return result;
-            }
-            byte[] certStrByte = Base64.getDecoder().decode(result);
-            try (BufferedOutputStream outs = new BufferedOutputStream(servletResponse.getOutputStream())) {
-                servletResponse.setHeader("Content-Type","application/x-x509-ca-cert");
-                servletResponse.setHeader("Content-Disposition", "attachment;filename=cert_license_fps_com.der;");
-                outs.write(certStrByte);
-                outs.flush();
-            }
-        } catch (IOException | InterruptedException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return "0000";
-    }
-
-    private String publicKeyRequest() throws IOException, InterruptedException {
-        String url = env.getProperty("pallycon.url.fpsKeyManager");
-        String siteId = env.getProperty("pallycon.siteid");
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("%s?siteId=%s", url, siteId)))
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return response.body();
     }
 }
