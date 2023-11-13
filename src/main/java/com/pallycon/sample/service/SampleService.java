@@ -6,6 +6,8 @@ import com.pallycon.sample.token.PallyConDrmTokenClient;
 import com.pallycon.sample.token.PallyConDrmTokenPolicy;
 import com.pallycon.sample.token.policy.PlaybackPolicy;
 import com.pallycon.sample.token.policy.common.ResponseFormat;
+import com.pallycon.sample.util.JSONUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -13,14 +15,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Base64;
 
 /**
@@ -255,5 +264,53 @@ public class SampleService implements Sample{
             responseData = licenseResponse;
         }
         return responseData;
+    }
+
+    /**
+     * Base64 FPS Cert
+     */
+    @Override
+    public String getFPSPublicKey() {
+        String result = null;
+        try {
+            result = publicKeyRequest();
+        } catch (IOException | InterruptedException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return result;
+    }
+
+    /**
+     * Binary FPS Cert
+     */
+    @Override
+    public String getFPSCertificate(HttpServletResponse servletResponse) {
+        try {
+            String result = publicKeyRequest();
+            if (JSONUtil.isJSONValid(result)) {
+                return result;
+            }
+            byte[] certStrByte = Base64.getDecoder().decode(result);
+            try (BufferedOutputStream outs = new BufferedOutputStream(servletResponse.getOutputStream())) {
+                servletResponse.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-x509-ca-cert");
+                servletResponse.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=cert_license_fps_com.der;");
+                outs.write(certStrByte);
+                outs.flush();
+            }
+        } catch (IOException | InterruptedException e) {
+            logger.error(e.getMessage(), e);
+        }
+        return "0000";
+    }
+
+    private String publicKeyRequest() throws IOException, InterruptedException {
+        String url = env.getProperty("pallycon.url.fpsKeyManager");
+        String siteId = env.getProperty("pallycon.siteid");
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(String.format("%s?siteId=%s", url, siteId)))
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response.body();
     }
 }
