@@ -7,7 +7,7 @@ Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 ### 테스트 환경 세팅
 
 - 재생 테스트용 플레이어 웹페이지가 로컬호스트(http://localhost)가 아닌 경우, 해당 URL에 HTTPS 설정이 필수입니다. (테스트용 웹 서버에 SSL/TLS 적용 필요)
-- Java JDK: amazon-corretto-17
+- Java JDK: amazon-corretto-21
 
 ### Application.properties 세팅
 
