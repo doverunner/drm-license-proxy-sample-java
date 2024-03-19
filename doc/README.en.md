@@ -7,7 +7,7 @@ This sample project is for PallyCon token proxy integration based on Spring boot
 ### Test configuration
 
 - If you test the sample player player page online(other than localhost), the page URL should be HTTPS. (SSL/TLS is required)
-- Java JDK: amazon-corretto-17
+- Java JDK: amazon-corretto-21
 
 ### Configuring Application.properties
 
