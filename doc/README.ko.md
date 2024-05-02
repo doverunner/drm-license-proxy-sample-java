@@ -1,4 +1,4 @@
-# PallyCon Token Proxy Sample (v2.1)
+# PallyCon Token Proxy Sample (v2.3)
 
 Spring boot를 이용한 PallyCon Token Proxy 샘플 프로젝트입니다.
 

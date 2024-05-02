@@ -1,4 +1,4 @@
-# PallyCon Token Proxy Sample (v2.1)
+# PallyCon Token Proxy Sample (v2.3)
 
 This sample project is for PallyCon token proxy integration based on Spring boot.
 
