@@ -1,6 +1,6 @@
-# drm-token-proxy-sample-java
+# DoveRunner DRM License Proxy Sample for Java
 
-PallyCon Token Proxy Sample JAVA Project
+DoveRunner Token Proxy Sample JAVA Project
 
 ## Getting started
 - [한국어](doc/README.ko.md)
