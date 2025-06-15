@@ -1,4 +1,4 @@
-package com.pallycon.sample.service.dto;
+package com.doverunner.sample.service.dto;
 
 /**
  * For NCG

@@ -1,8 +1,8 @@
-package com.pallycon.sample.controller;
+package com.doverunner.sample.controller;
 
-import com.pallycon.sample.service.DrmType;
-import com.pallycon.sample.service.Sample;
-import com.pallycon.sample.service.dto.RequestDto;
+import com.doverunner.sample.service.DrmType;
+import com.doverunner.sample.service.Sample;
+import com.doverunner.sample.service.dto.RequestDto;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,6 +60,11 @@ public class SampleController {
                 logger.error("not Method GET");
                 return new ResponseEntity(HttpStatus.METHOD_NOT_ALLOWED);
             }
+        }
+
+        if ("clearkey".equalsIgnoreCase(drmType)){
+            byte[] responseData = sampleService.getClearKeyLicense(drmType);
+            return ResponseEntity.ok().body(responseData);
         }
 
         byte[] responseData = sampleService.getLicenseData(pallyconClientMeta, requestBody, requestDto, drmType);

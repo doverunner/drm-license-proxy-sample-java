@@ -1,4 +1,4 @@
-package com.pallycon.sample.util;
+package com.doverunner.sample.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

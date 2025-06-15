@@ -1,6 +1,6 @@
 # drm-token-proxy-sample-java
 
-PallyCon Token Proxy Sample JAVA Project
+Doverunner Token Proxy Sample JAVA Project
 
 ## Getting started
 - [한국어](doc/README.ko.md)
