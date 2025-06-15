@@ -1,4 +1,4 @@
-package com.pallycon.sample.config;
+package com.doverunner.sample.config;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
