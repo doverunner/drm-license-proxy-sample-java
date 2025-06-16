@@ -1,12 +1,12 @@
-package com.pallycon.sample.service;
+package com.doverunner.sample.service;
 
 import com.google.common.io.ByteStreams;
-import com.pallycon.sample.service.dto.RequestDto;
-import com.pallycon.sample.token.PallyConDrmTokenClient;
-import com.pallycon.sample.token.PallyConDrmTokenPolicy;
-import com.pallycon.sample.token.policy.PlaybackPolicy;
-import com.pallycon.sample.token.policy.common.ResponseFormat;
-import com.pallycon.sample.util.JSONUtil;
+import com.doverunner.sample.service.dto.RequestDto;
+import com.doverunner.sample.token.DoverunnerDrmTokenClient;
+import com.doverunner.sample.token.DoverunnerDrmTokenPolicy;
+import com.doverunner.sample.token.policy.PlaybackPolicy;
+import com.doverunner.sample.token.policy.common.ResponseFormat;
+import com.doverunner.sample.util.JSONUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.xml.bind.DatatypeConverter;
 import org.json.simple.JSONObject;
@@ -55,7 +55,7 @@ public class SampleService implements Sample{
             String type = DrmType.getDrm(drmType.toLowerCase());
             logger.debug("DrmType : {}",  type);
 
-            String pallyconCustomData = createPallyConCustomdata(requestBody, requestDto, type);
+            String pallyconCustomData = createPallyconCustomData(requestBody, requestDto, type);
             logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
 
             String modeParam = "";
@@ -64,7 +64,7 @@ public class SampleService implements Sample{
                 modeParam = "?mode=" + requestDto.getMode();
                 method = HttpMethod.GET.name();
             }
-            byte[] licenseResponse = callLicenseServer(env.getProperty("pallycon.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
+            byte[] licenseResponse = callLicenseServer(env.getProperty("doverunner.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
             responseData = checkResponseData(licenseResponse, drmType);
             logger.debug("responseData :: {}", new String(responseData));
         }catch (Exception e){
@@ -75,7 +75,7 @@ public class SampleService implements Sample{
 
     /**
      * Create pallycon-customdata-v2 using the received paramter value.
-     * It is created using pallycon-token-sample.jar provided by Pallycon.
+     * It is created using doverunner-token-sample.jar provided by Doverunner.
      *
      * @param requestBody requestBody
      * @param requestDto requestDto
@@ -83,37 +83,40 @@ public class SampleService implements Sample{
      * @return
      * @throws Exception
      */
-    private String createPallyConCustomdata(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
-        String siteKey = env.getProperty("pallycon.sitekey");
-        String accessKey = env.getProperty("pallycon.accesskey");
-        String siteId = env.getProperty("pallycon.siteid");
+    private String createPallyconCustomData(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
+        String siteKey = env.getProperty("doverunner.sitekey");
+        String accessKey = env.getProperty("doverunner.accesskey");
+        String siteId = env.getProperty("doverunner.siteid");
 
         logger.debug("siteId :: {}", siteId);
         logger.debug("siteKey :: {}", siteKey);
         logger.debug("accessKey :: {}", accessKey);
 
-        String toeknResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
+        String tokenResponseFormat = env.getProperty("doverunner.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
-        //create pallycon drm token client
-        PallyConDrmTokenClient pallyConDrmTokenClient = new PallyConDrmTokenClient()
+        //create doverunner drm token client
+        DoverunnerDrmTokenClient doverunnerDrmTokenClient = new DoverunnerDrmTokenClient()
                 .siteKey(siteKey)
                 .accessKey(accessKey)
                 .siteId(siteId)
-                .responseFormat(ResponseFormat.valueOf(toeknResponseFormat));
+                .responseFormat(ResponseFormat.valueOf(tokenResponseFormat));
 
 
         switch (drmType.toLowerCase()){
+            case "wiseplay":
+                doverunnerDrmTokenClient.wiseplay();
+                break;
             case "ncg":
-                pallyConDrmTokenClient.ncg();
+                doverunnerDrmTokenClient.ncg();
                 break;
             case "fairplay":
-                pallyConDrmTokenClient.fairplay();
+                doverunnerDrmTokenClient.fairplay();
                 break;
             case "widevine":
-                pallyConDrmTokenClient.widevine();
+                doverunnerDrmTokenClient.widevine();
                 break;
             case "playready": default:
-                pallyConDrmTokenClient.playready();
+                doverunnerDrmTokenClient.playready();
                 break;
         }
 
@@ -126,12 +129,12 @@ public class SampleService implements Sample{
 
         //-----------------------------
 
-        pallyConDrmTokenClient.userId(userId);
-        pallyConDrmTokenClient.cId(cid);
+        doverunnerDrmTokenClient.userId(userId);
+        doverunnerDrmTokenClient.cId(cid);
 
         //TODO 2.
         // Create license rule
-        // https://pallycon.com/docs/en/multidrm/license/license-token/#license-policy-json
+        // https://doverunner.com/docs/en/multidrm/license/license-token/#license-policy-json
         // this sample rule : limit 3600 seconds license.
         PlaybackPolicy playbackPolicy = new PlaybackPolicy();
         playbackPolicy.licenseDuration(3600);
@@ -139,19 +142,19 @@ public class SampleService implements Sample{
 
 
         //TODO 3.
-        // create PallyConDrmTokenPolicy
+        // create DoverunnerDrmTokenPolicy
         // Set the created playbackpolicy, securitypolicy, and externalkey.
-        PallyConDrmTokenPolicy pallyConDrmTokenPolicy= new PallyConDrmTokenPolicy.PolicyBuilder()
+        DoverunnerDrmTokenPolicy doverunnerDrmTokenPolicy= new DoverunnerDrmTokenPolicy.PolicyBuilder()
                 .playbackPolicy(playbackPolicy)
                 .build();
 
         // Token is created with the created token policy.
-        return pallyConDrmTokenClient.policy(pallyConDrmTokenPolicy).execute();
+        return doverunnerDrmTokenClient.policy(doverunnerDrmTokenPolicy).execute();
 
     }
 
     /**
-     * Make a request to the Pallycon license server.
+     * Make a request to the Doverunner license server.
      * @param url
      * @param body
      * @param pallyconCustomData
@@ -179,6 +182,8 @@ public class SampleService implements Sample{
                     hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 }else if (drmType.equals(DrmType.NCG.getDrm())){
                     hurlConn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                }else if (drmType.equals(DrmType.WISEPLAY.getDrm())){
+                    hurlConn.setRequestProperty("Content-Type", "application/json");
                 }else{
                     hurlConn.setRequestProperty("Content-Type", "application/octet-stream");
                 }
@@ -225,8 +230,8 @@ public class SampleService implements Sample{
     private byte[] checkResponseData(byte[] licenseResponse, String drmType) throws Exception{
         JSONParser jsonParser = new JSONParser();
 
-        String tokenResponseFormat = env.getProperty("pallycon.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
-        String responseFormat = env.getProperty("pallycon.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
+        String tokenResponseFormat = env.getProperty("doverunner.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
+        String responseFormat = env.getProperty("doverunner.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
         if(RESPONSE_FORMAT_JSON.equals(tokenResponseFormat)){
             JSONObject responseJson = (JSONObject)jsonParser.parse(new String(licenseResponse));
@@ -304,8 +309,8 @@ public class SampleService implements Sample{
     }
 
     private String publicKeyRequest() throws IOException, InterruptedException {
-        String url = env.getProperty("pallycon.url.fpsKeyManager");
-        String siteId = env.getProperty("pallycon.siteid");
+        String url = env.getProperty("doverunner.url.fpsKeyManager");
+        String siteId = env.getProperty("doverunner.siteid");
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s?siteId=%s", url, siteId)))
@@ -313,4 +318,28 @@ public class SampleService implements Sample{
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+
+    public byte[] getClearKeyLicense(String drmType) {
+        String licenseServerUrl = env.getProperty("doverunner.url.clearkey");
+        String siteId = env.getProperty("doverunner.siteid");
+        String cid = "palmulti"; // 필요시 파라미터로 변경 가능
+
+        String url = String.format("%s?siteId=%s&cid=%s", licenseServerUrl, siteId, cid);
+
+        try {
+            return callLicenseServer(
+                    url,
+                    null,
+                    null,
+                    drmType.toLowerCase(),
+                    HttpMethod.GET.name(),
+                    null
+            );
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
 }
