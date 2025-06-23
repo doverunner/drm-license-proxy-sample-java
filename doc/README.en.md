@@ -17,7 +17,7 @@ You need to configure the below values to run the sample project.
 - doverunner.sitekey= {Doverunner Site Key}
 - doverunner.accesskey= {Doverunner Access Key}
 - doverunner.siteid= {Doverunner Site ID}
-- doverunner.url.license= https://license.pallycon.com/ri/licenseManager.do
+- doverunner.url.license= https://license.doverunner.com/ri/licenseManager.do
 
 ### Options for Response types
 
@@ -53,7 +53,7 @@ doverunner.response.format = [original|json]
 
 ## TODO
 
-1. For testing, you need to update the `TODO` items in the `createPallyconCustomData` method.
+1. For testing, you need to update the `TODO` items in the `createDoverunnerCustomData` method.
     - [properties](../src/main/resources/application.properties)
     - [JAVA](../src/main/java/com/doverunner/sample/service/SampleService.java)
 
@@ -63,7 +63,7 @@ doverunner.response.format = [original|json]
 
 3. Specify the policy to be used using `new DoverunnerDrmTokenClient()`
 
-4. The device information header `pallycon-client-meta` allows you to receive information from the client. ( Pallycon SDK sends it by default. )
+4. The device information header `doverunner-client-meta` allows you to receive information from the client. ( Doverunner SDK sends it by default. )
 - Original Value String : `ewoJImRldmljZV9pbmZvIjogewoJCSJkZXZpY2VfbW9kZWwiOiAiaVBob25lIFNFIChpUGhvbmU4LDQpIiwKCQkib3NfdmVyc2lvbiI6IjE1LjcuMiIKCX0KfQ==`
 - Base64 Decoding :
 ```JSON

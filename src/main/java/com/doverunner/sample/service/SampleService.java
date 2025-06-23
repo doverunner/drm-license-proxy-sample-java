@@ -49,14 +49,14 @@ public class SampleService implements Sample{
     @Autowired
     protected Environment env;
 
-    public byte[] getLicenseData(String pallyconClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
+    public byte[] getLicenseData(String doverunnerClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
         byte[] responseData = null;
         try {
             String type = DrmType.getDrm(drmType.toLowerCase());
             logger.debug("DrmType : {}",  type);
 
-            String pallyconCustomData = createPallyconCustomData(requestBody, requestDto, type);
-            logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
+            String doverunnerCustomData = createDoverunnerCustomData(requestBody, requestDto, type);
+            logger.debug("doverunner-customdata-v2 : {}", doverunnerCustomData);
 
             String modeParam = "";
             String method = HttpMethod.POST.name();
@@ -64,7 +64,7 @@ public class SampleService implements Sample{
                 modeParam = "?mode=" + requestDto.getMode();
                 method = HttpMethod.GET.name();
             }
-            byte[] licenseResponse = callLicenseServer(env.getProperty("doverunner.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
+            byte[] licenseResponse = callLicenseServer(env.getProperty("doverunner.url.license") + modeParam, requestBody, doverunnerCustomData, type, method, doverunnerClientMeta);
             responseData = checkResponseData(licenseResponse, drmType);
             logger.debug("responseData :: {}", new String(responseData));
         }catch (Exception e){
@@ -74,7 +74,7 @@ public class SampleService implements Sample{
     }
 
     /**
-     * Create pallycon-customdata-v2 using the received paramter value.
+     * Create doverunner-customdata-v2 using the received paramter value.
      * It is created using doverunner-token-sample.jar provided by Doverunner.
      *
      * @param requestBody requestBody
@@ -83,7 +83,7 @@ public class SampleService implements Sample{
      * @return
      * @throws Exception
      */
-    private String createPallyconCustomData(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
+    private String createDoverunnerCustomData(byte[] requestBody, RequestDto requestDto, String drmType) throws Exception {
         String siteKey = env.getProperty("doverunner.sitekey");
         String accessKey = env.getProperty("doverunner.accesskey");
         String siteId = env.getProperty("doverunner.siteid");
@@ -157,14 +157,14 @@ public class SampleService implements Sample{
      * Make a request to the Doverunner license server.
      * @param url
      * @param body
-     * @param pallyconCustomData
+     * @param doverunnerCustomData
      * @param drmType
      * @param method
-     * @param pallyconClientMeta
+     * @param doverunnerClientMeta
      * @return
      * @throws Exception
      */
-    byte[] callLicenseServer(String url, byte[] body, String pallyconCustomData, String drmType, String method, String pallyconClientMeta) throws Exception{
+    byte[] callLicenseServer(String url, byte[] body, String doverunnerCustomData, String drmType, String method, String doverunnerClientMeta) throws Exception{
         byte[] targetArray= null;
         InputStream in = null;
 
@@ -188,11 +188,11 @@ public class SampleService implements Sample{
                     hurlConn.setRequestProperty("Content-Type", "application/octet-stream");
                 }
 
-                if (pallyconCustomData != null && !"".equals(pallyconCustomData)) {
-                    hurlConn.setRequestProperty("pallycon-customdata-v2", pallyconCustomData);
+                if (doverunnerCustomData != null && !"".equals(doverunnerCustomData)) {
+                    hurlConn.setRequestProperty("doverunner-customdata-v2", doverunnerCustomData);
                 }
-                if (pallyconClientMeta != null && !"".equals(pallyconClientMeta)) {
-                    hurlConn.setRequestProperty("pallycon-client-meta", pallyconClientMeta);
+                if (doverunnerClientMeta != null && !"".equals(doverunnerClientMeta)) {
+                    hurlConn.setRequestProperty("doverunner-client-meta", doverunnerClientMeta);
                 }
                 hurlConn.setRequestMethod(method);
                 hurlConn.setDoOutput(true);
