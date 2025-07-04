@@ -38,14 +38,14 @@ public class SampleController {
      * @return
      */
     @PostMapping(value = "/drm/{drmType}")
-    public ResponseEntity drmProxyPost( @RequestHeader(required=false, value="doverunner-client-meta") String doverunnerClientMeta
+    public ResponseEntity drmProxyPost( @RequestHeader(required=false, value="pallycon-client-meta") String PallyconClientMeta
             , @RequestBody(required = false) byte[] requestBody
             , @PathVariable(value = "drmType") String drmType
             , @RequestParam(value = "spc", required = false) String spc
             , RequestDto requestDto
             , HttpServletRequest request
     ){
-        logger.debug("header doverunnerClientMeta :: {}", doverunnerClientMeta);
+        logger.debug("header PallyconClientMeta :: {}", PallyconClientMeta);
         logger.debug("request content-type :: {}", request.getContentType());
         logger.debug("request Method :: {}", request.getMethod());
 
@@ -67,7 +67,7 @@ public class SampleController {
             return ResponseEntity.ok().body(responseData);
         }
 
-        byte[] responseData = sampleService.getLicenseData(doverunnerClientMeta, requestBody, requestDto, drmType);
+        byte[] responseData = sampleService.getLicenseData(PallyconClientMeta, requestBody, requestDto, drmType);
         return ResponseEntity.status(HttpStatus.OK.value()).body(responseData);
     }
 
