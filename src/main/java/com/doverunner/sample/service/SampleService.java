@@ -49,13 +49,13 @@ public class SampleService implements Sample{
     @Autowired
     protected Environment env;
 
-    public byte[] getLicenseData(String PallyconClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
+    public byte[] getLicenseData(String pallyconClientMeta, byte[] requestBody, RequestDto requestDto, String drmType){
         byte[] responseData = null;
         try {
             String type = DrmType.getDrm(drmType.toLowerCase());
             logger.debug("DrmType : {}",  type);
 
-            String pallycon = createPallyconCustomData(requestBody, requestDto, type);
+            String pallyconCustomData = createPallyconCustomData(requestBody, requestDto, type);
             logger.debug("pallycon-customdata-v2 : {}", pallyconCustomData);
 
             String modeParam = "";
@@ -64,7 +64,7 @@ public class SampleService implements Sample{
                 modeParam = "?mode=" + requestDto.getMode();
                 method = HttpMethod.GET.name();
             }
-            byte[] licenseResponse = callLicenseServer(env.getProperty("doverunner.url.license") + modeParam, requestBody, pallyconCustomData, type, method, PallyconClientMeta);
+            byte[] licenseResponse = callLicenseServer(env.getProperty("doverunner.url.license") + modeParam, requestBody, pallyconCustomData, type, method, pallyconClientMeta);
             responseData = checkResponseData(licenseResponse, drmType);
             logger.debug("responseData :: {}", new String(responseData));
         }catch (Exception e){
@@ -160,11 +160,11 @@ public class SampleService implements Sample{
      * @param pallyconCustomData
      * @param drmType
      * @param method
-     * @param PallyconClientMeta
+     * @param pallyconClientMeta
      * @return
      * @throws Exception
      */
-    byte[] callLicenseServer(String url, byte[] body, String pallyconCustomData, String drmType, String method, String PallyconClientMeta) throws Exception{
+    byte[] callLicenseServer(String url, byte[] body, String pallyconCustomData, String drmType, String method, String pallyconClientMeta) throws Exception{
         byte[] targetArray= null;
         InputStream in = null;
 
@@ -191,8 +191,8 @@ public class SampleService implements Sample{
                 if (pallyconCustomData != null && !"".equals(pallyconCustomData)) {
                     hurlConn.setRequestProperty("pallycon-customdata-v2", pallyconCustomData);
                 }
-                if (PallyconClientMeta != null && !"".equals(PallyconClientMeta)) {
-                    hurlConn.setRequestProperty("pallycon-client-meta", PallyconClientMeta);
+                if (pallyconClientMeta != null && !"".equals(pallyconClientMeta)) {
+                    hurlConn.setRequestProperty("pallycon-client-meta", pallyconClientMeta);
                 }
                 hurlConn.setRequestMethod(method);
                 hurlConn.setDoOutput(true);
