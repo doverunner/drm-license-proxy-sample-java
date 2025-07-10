@@ -12,7 +12,7 @@
     <artifactId>proxy-sample-java</artifactId>
     <version>3.0.0</version>
     <name>drm-token-proxy-sample-java</name>
-    <description>Doverunner Token Proxy Sample project for Spring Boot</description>
+    <description>DoveRunner Token Proxy Sample project for Spring Boot</description>
 
     <properties>
         <java.version>21</java.version>

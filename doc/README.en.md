@@ -1,7 +1,3 @@
-# Doverunner Token Proxy Sample (v3.0)
-
-This sample project is for Doverunner token proxy integration based on Spring boot.
-
 ## Getting started
 
 ### Test configuration
@@ -14,21 +10,21 @@ This sample project is for Doverunner token proxy integration based on Spring bo
 You need to configure the below values to run the sample project.
 
 - server.port= {server port}
-- doverunner.sitekey= {Doverunner Site Key}
-- doverunner.accesskey= {Doverunner Access Key}
-- doverunner.siteid= {Doverunner Site ID}
+- doverunner.sitekey= {DoveRunner Site Key}
+- doverunner.accesskey= {DoveRunner Access Key}
+- doverunner.siteid= {DoveRunner Site ID}
 - doverunner.url.license= https://drm-license-seoul.doverunner.com/ri/licenseManager.do
 
 ### Options for Response types
 
-You can set the type of license response that the Doverunner license server will send to the proxy server and the type of response that the proxy server will send to the client as follows.
+You can set the type of license response that the DoveRunner license server will send to the proxy server and the type of response that the proxy server will send to the client as follows.
 
 ```
 doverunner.token.response.format = [original|json]
 doverunner.response.format = [original|json]
 ```
 
-- doverunner.token.response.format: Set the license response type of Doverunner license server
+- doverunner.token.response.format: Set the license response type of DoveRunner license server
     - original: basic license information only (same as the response of v1.0 spec)
     - json: responds in JSON type with additional information such as Device ID
 
@@ -61,9 +57,9 @@ doverunner.response.format = [original|json]
 - Different companies have different encryption methods, so we don't provide separate guides.
 
 
-3. Specify the policy to be used using `new DoverunnerDrmTokenClient()`
+3. Specify the policy to be used using `new DoveRunnerDrmTokenClient()`
 
-4. The device information header `pallycon-client-meta` allows you to receive information from the client. ( Doverunner SDK sends it by default. )
+4. The device information header `pallycon-client-meta` allows you to receive information from the client. ( DoveRunner SDK sends it by default. )
 - Original Value String : `ewoJImRldmljZV9pbmZvIjogewoJCSJkZXZpY2VfbW9kZWwiOiAiaVBob25lIFNFIChpUGhvbmU4LDQpIiwKCQkib3NfdmVyc2lvbiI6IjE1LjcuMiIKCX0KfQ==`
 - Base64 Decoding :
 ```JSON
@@ -80,4 +76,4 @@ doverunner.response.format = [original|json]
 
 https://doverunner.com | mkt@doverunner.com
 
-Copyright 2025 Doverunner. All Rights Reserved.
+Copyright 2025 DoveRunner. All Rights Reserved.

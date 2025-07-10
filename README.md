@@ -1,6 +1,5 @@
-# drm-token-proxy-sample-java
+# DoveRunner License Proxy Sample - JAVA (v3.0)
 
-Doverunner Token Proxy Sample JAVA Project
 
 ## Getting started
 - [한국어](doc/README.ko.md)

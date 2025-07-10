@@ -2,8 +2,8 @@ package com.doverunner.sample.service;
 
 import com.google.common.io.ByteStreams;
 import com.doverunner.sample.service.dto.RequestDto;
-import com.doverunner.sample.token.DoverunnerDrmTokenClient;
-import com.doverunner.sample.token.DoverunnerDrmTokenPolicy;
+import com.doverunner.sample.token.DoveRunnerDrmTokenClient;
+import com.doverunner.sample.token.DoveRunnerDrmTokenPolicy;
 import com.doverunner.sample.token.policy.PlaybackPolicy;
 import com.doverunner.sample.token.policy.common.ResponseFormat;
 import com.doverunner.sample.util.JSONUtil;
@@ -75,7 +75,7 @@ public class SampleService implements Sample{
 
     /**
      * Create pallycon-customdata-v2 using the received paramter value.
-     * It is created using doverunner-token-sample.jar provided by Doverunner.
+     * It is created using doverunner-token-sample.jar provided by DoveRunner.
      *
      * @param requestBody requestBody
      * @param requestDto requestDto
@@ -95,7 +95,7 @@ public class SampleService implements Sample{
         String tokenResponseFormat = env.getProperty("doverunner.token.response.format", RESPONSE_FORMAT_ORIGINAL).toUpperCase();
 
         //create doverunner drm token client
-        DoverunnerDrmTokenClient doverunnerDrmTokenClient = new DoverunnerDrmTokenClient()
+        DoveRunnerDrmTokenClient doverunnerDrmTokenClient = new DoveRunnerDrmTokenClient()
                 .siteKey(siteKey)
                 .accessKey(accessKey)
                 .siteId(siteId)
@@ -142,9 +142,9 @@ public class SampleService implements Sample{
 
 
         //TODO 3.
-        // create DoverunnerDrmTokenPolicy
+        // create DoveRunnerDrmTokenPolicy
         // Set the created playbackpolicy, securitypolicy, and externalkey.
-        DoverunnerDrmTokenPolicy doverunnerDrmTokenPolicy= new DoverunnerDrmTokenPolicy.PolicyBuilder()
+        DoveRunnerDrmTokenPolicy doverunnerDrmTokenPolicy= new DoveRunnerDrmTokenPolicy.PolicyBuilder()
                 .playbackPolicy(playbackPolicy)
                 .build();
 
@@ -154,7 +154,7 @@ public class SampleService implements Sample{
     }
 
     /**
-     * Make a request to the Doverunner license server.
+     * Make a request to the DoveRunner license server.
      * @param url
      * @param body
      * @param pallyconCustomData
