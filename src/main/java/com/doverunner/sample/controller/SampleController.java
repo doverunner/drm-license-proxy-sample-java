@@ -1,8 +1,8 @@
-package com.pallycon.sample.controller;
+package com.doverunner.sample.controller;
 
-import com.pallycon.sample.service.DrmType;
-import com.pallycon.sample.service.dto.RequestDto;
-import com.pallycon.sample.service.Sample;
+import com.doverunner.sample.service.DrmType;
+import com.doverunner.sample.service.Sample;
+import com.doverunner.sample.service.dto.RequestDto;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -62,6 +62,11 @@ public class SampleController {
             }
         }
 
+        if ("clearkey".equalsIgnoreCase(drmType)){
+            byte[] responseData = sampleService.getClearKeyLicense(drmType);
+            return ResponseEntity.ok().body(responseData);
+        }
+
         byte[] responseData = sampleService.getLicenseData(pallyconClientMeta, requestBody, requestDto, drmType);
         return ResponseEntity.status(HttpStatus.OK.value()).body(responseData);
     }
@@ -100,4 +105,3 @@ public class SampleController {
     }
 
 }
-

@@ -1,8 +1,7 @@
-package com.pallycon.sample.service;
+package com.doverunner.sample.service;
 
-import com.pallycon.sample.service.dto.RequestDto;
+import com.doverunner.sample.service.dto.RequestDto;
 import jakarta.servlet.http.HttpServletResponse;
-
 
 /**
  * Created by Brown on 2019-12-11.
@@ -13,4 +12,6 @@ public interface Sample {
     String getFPSPublicKey();
 
     String getFPSCertificate(HttpServletResponse servletResponse);
+
+    byte[] getClearKeyLicense(String drmType);
 }
